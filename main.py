@@ -1,16 +1,53 @@
-# This is a sample Python script.
+"""Основная программа"""
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+import argparse
+import os
 
-
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+from typing import Union, Any
 
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
+def check_fields(args: Any) -> bool:
+    """Проверка переданных аргументов"""
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    if not os.path.exists(args.file):
+        print("Такого файла c изображением не существует.")
+        return False
+    
+    if (args.level) not in range(1, 9):
+        print("Значение уровня сжатия должно быть от 0 до 8.")
+        return False
+    
+    return True
+
+
+def parse_args() -> Union[bool, str]:
+    """Обработка параметров командной строки"""
+    # Осуществляем разбор аргументов командной строки
+    parser = argparse.ArgumentParser(description="Сжатие изображений на основе квадродеревьев")
+
+    parser.add_argument("-f", "--file",  dest="file", type=str,
+                        help="Исходный файл изображения", required=True)
+
+    parser.add_argument("-l", "--level", dest="level", type=int,
+                        help="Уровень сжатия", required=True)
+
+    parser.add_argument("-b", "--borders", dest="borders", action="store_true",
+                        help="Отображение границ")
+
+    # В эту переменную попадает результат разбора аргументов командной строки.
+    args = parser.parse_args()
+
+    # Проверяем аргументы командной строки
+    if check_fields(args):
+        pass
+    else:
+        print("Это ноу")
+
+
+def main():
+    """Точка входа"""
+    parse_args()
+
+
+if __name__ == "__main__":
+    main()
