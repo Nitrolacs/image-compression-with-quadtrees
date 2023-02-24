@@ -4,6 +4,7 @@ import argparse
 import os
 
 from typing import Union, Any
+from work_with_images import compression_start
 
 
 def check_fields(args: Any) -> bool:
@@ -39,9 +40,9 @@ def parse_args() -> Union[bool, str]:
 
     # Проверяем аргументы командной строки
     if check_fields(args):
-        pass
+        compression_start(args.file, args.level, args.borders)
     else:
-        print("Это ноу")
+        print("Переданы неверные аргументы.")
 
 
 def main():
