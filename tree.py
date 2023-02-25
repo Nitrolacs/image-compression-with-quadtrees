@@ -1,7 +1,7 @@
 import threading
 
 from PIL import Image
-from typing import Optional
+from typing import Optional, Union
 
 MAX_DEPTH = 8
 ERROR_THRESHOLD = 13
@@ -23,9 +23,12 @@ class Point:
         return f"Точка: ({self.x}, {self.y})"
 
 
-def weighted_average(hist):
-    """Возвращает взвешенное среднее значение цвета и
-    ошибку из гистограммы пикселей."""
+def weighted_average(hist: list[int]) -> Union[int, float]:
+    """
+    Возвращает взвешенное среднее значение цвета и
+    ошибку из гистограммы пикселей.
+    :param hist: список количества пикселей для каждого диапазона.
+    """
     total = sum(hist)
     value, error = 0, 0
     if total > 0:
@@ -35,8 +38,11 @@ def weighted_average(hist):
     return value, error
 
 
-def color_from_histogram(hist):
-    """Возвращает средний цвет RGB из заданной гистограммы количества цветов пикселей."""
+def color_from_histogram(hist: list[int]) -> Union[tuple[int], float]:
+    """
+    Возвращает средний цвет RGB из заданной гистограммы количества цветов пикселей.
+    :param hist: список количества пикселей для каждого диапазона.
+    """
     red, red_error = weighted_average(hist[:256])
     green, green_error = weighted_average(hist[256:512])
     blue, blue_error = weighted_average(hist[512:768])
@@ -46,11 +52,15 @@ def color_from_histogram(hist):
 
 class QuadtreeNode:
     """
-    Узел квадродерева, который содержит секцию изображения и информацию о ней.
+    Класс, отвечающий за узел квадродерева, 
+    который содержит секцию изображения и информацию о ней.
     """
 
     def __init__(self, image: Image, border_box: tuple[int],
                  depth: int) -> None:
+        """
+        Конструктор класса.
+        """
         self.__border_box = border_box  # регион копирования
         self.__depth = depth
         self.__childrens = None  # top left, top right, bottom left, bottom right
@@ -58,13 +68,24 @@ class QuadtreeNode:
 
         # Обрезка части изображения по координатам
         image = image.crop(border_box)
+        # Метод histogram возвращает список количества пикселей
+        # для каждого диапазона, присутствующего на изображении.
+        # В списке будут объединены все подсчеты для каждого диапазона.
+        # Для RGB изображения для каждого цвета будет возвращен
+        # список количества пикселей, суммарно 768.
+        # Другими словами, метод дает информацию о том, сколько красных,
+        # зелёных и синих пикселей присутствует в изображении для каждых
+        # 256 типо красного, 256 типов зеленого и 256 синего.
         hist = image.histogram()
         self.__average_color, self.__error = color_from_histogram(
             hist)  # (r, g, b), error
 
     @property
     def depth(self) -> int:
-        """Возврат глубины."""
+        """
+        Возврат глубины.
+        :return: глубина.
+        """
         return self.__depth
 
     @property
@@ -96,7 +117,12 @@ class QuadtreeNode:
         self.__is_leaf = value
 
     def split(self, image: Image) -> None:
-        """Разбивает данную секцию изображения на четыре равных блока."""
+        """
+        Разбивает данную секцию изображения на четыре равных блока.
+        :param image: изображение
+        :return: None
+        """
+        
         left, top, right, bottom = self.__border_box
 
         left_right = left + (right - left) / 2
