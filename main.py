@@ -34,13 +34,16 @@ def parse_args() -> Union[bool, str]:
 
     parser.add_argument("-b", "--borders", dest="borders", action="store_true",
                         help="Отображение границ")
+    
+    parser.add_argument("-g", "--gif", dest="gif", action="store_true",
+                        help="Создание gif-изображения")
 
     # В эту переменную попадает результат разбора аргументов командной строки.
     args = parser.parse_args()
 
     # Проверяем аргументы командной строки
     if check_fields(args):
-        compression_start(args.file, args.level, args.borders)
+        compression_start(args.file, args.level, args.borders, args.gif)
     else:
         print("Переданы неверные аргументы.")
 

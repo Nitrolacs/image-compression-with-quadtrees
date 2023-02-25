@@ -37,11 +37,11 @@ def weighted_average(hist):
 
 def color_from_histogram(hist):
     """Возвращает средний цвет RGB из заданной гистограммы количества цветов пикселей."""
-    r, re = weighted_average(hist[:256])
-    g, ge = weighted_average(hist[256:512])
-    b, be = weighted_average(hist[512:768])
-    e = re * 0.2989 + ge * 0.5870 + be * 0.1140
-    return (int(r), int(g), int(b)), e
+    red, red_error = weighted_average(hist[:256])
+    green, green_error = weighted_average(hist[256:512])
+    blue, blue_error = weighted_average(hist[512:768])
+    error = red_error * 0.2989 + green_error * 0.5870 + blue_error * 0.1140
+    return (int(red), int(green), int(blue)), error
 
 
 class QuadtreeNode:
