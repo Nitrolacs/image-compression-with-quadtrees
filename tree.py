@@ -1,3 +1,5 @@
+"""Реализация квадродерева"""
+
 import threading
 
 from PIL import Image
@@ -5,7 +7,6 @@ from typing import Optional, Union
 
 MAX_DEPTH = 8
 ERROR_THRESHOLD = 13
-
 
 class Point:
     """Класс точки."""
@@ -28,6 +29,7 @@ def weighted_average(hist: list[int]) -> Union[int, float]:
     Возвращает взвешенное среднее значение цвета и
     ошибку из гистограммы пикселей.
     :param hist: список количества пикселей для каждого диапазона.
+    :return: взвешенное среднее значение цвета и ошибку
     """
     total = sum(hist)
     value, error = 0, 0
@@ -42,6 +44,7 @@ def color_from_histogram(hist: list[int]) -> Union[tuple[int], float]:
     """
     Возвращает средний цвет RGB из заданной гистограммы количества цветов пикселей.
     :param hist: список количества пикселей для каждого диапазона.
+    :return: средний цвет и ошибку.
     """
     red, red_error = weighted_average(hist[:256])
     green, green_error = weighted_average(hist[256:512])
@@ -60,6 +63,10 @@ class QuadtreeNode:
                  depth: int) -> None:
         """
         Конструктор класса.
+        :param image: изображение
+        :param border_box: координатная область
+        :param depth: глубина
+        :return: None
         """
         self.__border_box = border_box  # регион копирования
         self.__depth = depth
@@ -90,10 +97,18 @@ class QuadtreeNode:
 
     @property
     def error(self) -> float:
+        """
+        Возврат значения ошибки
+        :return: значение ошибки
+        """
         return self.__error
 
     @property
     def average_color(self) -> tuple[int, int, int]:
+        """
+        Возврат значения цвета
+        :return: значение цвета
+        """
         return self.__average_color
 
     @property
@@ -143,7 +158,7 @@ class QuadtreeNode:
 
 
 class QuadTree:
-    """Класс квадродерева."""
+    """Класс квадродерева ."""
 
     def __init__(self, image: Image) -> None:
         self.__width, self.__height = image.size
