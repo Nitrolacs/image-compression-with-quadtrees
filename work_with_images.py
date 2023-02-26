@@ -42,11 +42,9 @@ def add_img_to_gif(image: Image,
                    gif: CreatorGifImages) -> None:
     """
     Добавляет один кадр к гифке
-    :param data: кадр, добавляемый к гифке
-    :param width: ширина окна
-    :param height: высота окна
+    :param image: Добавляемый кадр к гифке
     :param gif: экземпляр класса CreatorGifImages
-    :return:
+    :return: None
     """
     gif.frames_count += 1
     gif.frames.append(image)
@@ -56,6 +54,8 @@ def add_img_to_gif(image: Image,
 def create_gif(gif: CreatorGifImages) -> None:
     """
     Метод сохранения гифки в директорию
+    :param gif: Класс gif изображения
+    :return: None
     """
     print("Gif-изображение создаётся...")
 
@@ -75,7 +75,14 @@ def create_gif(gif: CreatorGifImages) -> None:
 
 
 def create_image(quadtree: QuadTree, level: int,
-                 borders: bool) -> None:
+                 borders: bool) -> Image:
+    """
+    Создание изображения на основе квадродерева
+    :param quadtree: Квадродерево
+    :param level: Уровень глубины
+    :param borders: Нужны ли границы
+    :return: Готовое изображение
+    """
     # Создаём пустой холст изображения
     image = Image.new('RGB', (quadtree.width, quadtree.height))
 
@@ -95,6 +102,14 @@ def create_image(quadtree: QuadTree, level: int,
 
 def compression_start(file: str, level: int, borders: bool, 
                       gif: bool) -> None:
+    """
+    Начало сжатия
+    :param file: Путь к файлу
+    :param level: Уровень глубины
+    :param borders: Отображение границ
+    :param gif: Нужно ли создавать gif изображение
+    :return: None
+    """
     original_image = Image.open(file)
     quadtree = QuadTree(original_image)
 
