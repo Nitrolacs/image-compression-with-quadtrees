@@ -10,22 +10,24 @@ from work_with_images import compression_start
 def check_fields(args: Any) -> bool:
     """Проверка переданных аргументов"""
 
-    if not os.path.exists(args.file) or args.file[len(args.file) - 3::] not in \
+    if not os.path.exists(args.file) or \
+            args.file[len(args.file) - 3::] not in \
             ["jpg", "png", "jpeg"]:
         print("Такого файла c изображением не существует.")
         return False
-    
+
     if args.level not in range(1, 9):
         print("Значение уровня сжатия должно быть от 0 до 8.")
         return False
-    
+
     return True
 
 
 def parse_args() -> Union[bool, str]:
     """Обработка параметров командной строки"""
     # Осуществляем разбор аргументов командной строки
-    parser = argparse.ArgumentParser(description="Сжатие изображений на основе квадродеревьев")
+    parser = argparse.ArgumentParser(description="Сжатие изображений на основе"
+                                                 " квадродеревьев")
 
     parser.add_argument("-f", "--file",  dest="file", type=str,
                         help="Исходный файл изображения", required=True)
@@ -35,7 +37,7 @@ def parse_args() -> Union[bool, str]:
 
     parser.add_argument("-b", "--borders", dest="borders", action="store_true",
                         help="Отображение границ")
-    
+
     parser.add_argument("-g", "--gif", dest="gif", action="store_true",
                         help="Создание gif-изображения")
 

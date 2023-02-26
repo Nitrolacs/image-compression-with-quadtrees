@@ -1,3 +1,7 @@
+"""
+Модуль для создания изображений
+"""
+
 import os
 
 from PIL import Image, ImageDraw
@@ -10,15 +14,24 @@ class CreatorGifImages:
     Класс, отвечающий за сохранение Gif-изображений
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """
         Конструктор класса, который будет сохранять гифки
+        :return: None
         """
         self.frames = []
         self.frames_count = 0
         self.gif_number = 1
 
-        self.path = self.create_path()
+        self.__path = self.create_path()
+
+    @property
+    def path(self):
+        """
+        Получение пути к gif изображению.
+        :return: путь к изображению
+        """
+        return self.__path
 
     def create_path(self) -> str:
         """
@@ -36,7 +49,7 @@ class CreatorGifImages:
             self.gif_number += 1
             path = f"{directory}\\gif{self.gif_number}.gif"
         return path
-    
+
 
 def add_img_to_gif(image: Image,
                    gif: CreatorGifImages) -> None:
@@ -50,7 +63,7 @@ def add_img_to_gif(image: Image,
     gif.frames.append(image)
 
 
-    
+
 def create_gif(gif: CreatorGifImages) -> None:
     """
     Метод сохранения гифки в директорию
@@ -100,7 +113,7 @@ def create_image(quadtree: QuadTree, level: int,
     return image
 
 
-def compression_start(file: str, level: int, borders: bool, 
+def compression_start(file: str, level: int, borders: bool,
                       gif: bool) -> None:
     """
     Начало сжатия

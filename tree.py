@@ -1,25 +1,26 @@
 """Реализация квадродерева"""
 
 import threading
-
-from PIL import Image
 from typing import Optional, Union
+from PIL import Image
+
 
 MAX_DEPTH = 8  # Максимальная глубина узла
 ERROR_THRESHOLD = 13  # Порог значения
 
+
 class Point:
     """Класс точки."""
 
-    def __init__(self, x: int, y: int) -> None:
+    def __init__(self, x_coordinate: int, y_coordinate: int) -> None:
         """
         Конструктор класса точки.
-        :param x: Координата x
-        :param y: Координата y
+        :param x_coordinate: Координата x
+        :param y_coordinate: Координата y
         :return: None
         """
-        self.x = x
-        self.y = y
+        self.x_coordinate = x_coordinate
+        self.y_coordinate = y_coordinate
 
     def __eq__(self, another: "Point") -> bool:
         """
@@ -27,14 +28,15 @@ class Point:
         :param another: Точка для сравнения
         :return: Результат сравнения
         """
-        return self.x == another.y and self.y == another.y
+        return self.x_coordinate == another.y_coordinate and \
+            self.y_coordinate == another.y_coordinate
 
     def __repr__(self) -> str:
         """
         Строковое представление точки.
-        :return: строковое представление точки
+        :return: Cтроковое представление точки
         """
-        return f"Точка: ({self.x}, {self.y})"
+        return f"Точка: ({self.x_coordinate}, {self.y_coordinate})"
 
 
 def weighted_average(hist: list[int]) -> Union[int, float]:
@@ -47,7 +49,13 @@ def weighted_average(hist: list[int]) -> Union[int, float]:
     total = sum(hist)
     value, error = 0, 0
     if total > 0:
+        # Формула для взвешенного среднего значения
+        # предполагает умножение каждого щначения на его вес
+        # (количество пикселей с этим значением), а затем деление
+        # общего произведения на общее количество пикселей.
         value = sum(i * x for i, x in enumerate(hist)) / total
+        # Формула для ошибки рассчитывает среднеквадратичное отклонение
+        # каждого значения от взвешенного среднего значения.
         error = sum(x * (value - i) ** 2 for i, x in enumerate(hist)) / total
         error = error ** 0.5
     return value, error
@@ -55,9 +63,10 @@ def weighted_average(hist: list[int]) -> Union[int, float]:
 
 def color_from_histogram(hist: list[int]) -> Union[tuple[int], float]:
     """
-    Возвращает средний цвет RGB из заданной гистограммы количества цветов пикселей.
+    Возвращает средний цвет RGB из заданной гистограммы
+    количества цветов пикселей.
     :param hist: список количества пикселей для каждого диапазона.
-    :return: средний цвет и ошибку.
+    :return: Cредний цвет и ошибку.
     """
     red, red_error = weighted_average(hist[:256])
     green, green_error = weighted_average(hist[256:512])
@@ -68,7 +77,7 @@ def color_from_histogram(hist: list[int]) -> Union[tuple[int], float]:
 
 class QuadtreeNode:
     """
-    Класс, отвечающий за узел квадродерева, 
+    Класс, отвечающий за узел квадродерева,
     который содержит секцию изображения и информацию о ней.
     """
 
@@ -83,12 +92,14 @@ class QuadtreeNode:
         """
         self.__border_box = border_box  # регион копирования
         self.__depth = depth
-        self.__childrens = None  # top left, top right, bottom left, bottom right
+        self.__childrens = None  # top left,top right,bottom left,bottom right
         self.__is_leaf = False
         self.__node_points = []
 
-        left_right = self.__border_box[0] + (self.__border_box[2] - self.__border_box[0]) / 2
-        top_bottom = self.__border_box[1] + (self.__border_box[3] - self.__border_box[1]) / 2
+        left_right = self.__border_box[0] + (self.__border_box[2] -
+                                             self.__border_box[0]) / 2
+        top_bottom = self.__border_box[1] + (self.__border_box[3] -
+                                             self.__border_box[1]) / 2
 
         self.__node_center_point = Point(left_right, top_bottom)
 
@@ -110,31 +121,31 @@ class QuadtreeNode:
     def depth(self) -> int:
         """
         Возвращает значение глубины.
-        :return: глубина.
+        :return: Значение глубины.
         """
         return self.__depth
-    
+
     @property
-    def node_center_point(self) -> int:
+    def node_center_point(self) -> Point:
         """
         Возвращает координаты центральной точки узла.
-        :return: глубина.
+        :return: Координаты центральной точки.
         """
         return self.__node_center_point
-    
+
     @property
     def node_points(self) -> list[Point]:
         """
         Возвращает список точек узла.
-        :return: глубина.
+        :return: Список точек узла.
         """
         return self.__node_points
 
     @property
     def error(self) -> float:
         """
-        Возвращает значения ошибки
-        :return: значение ошибки
+        Возвращает значения ошибки.
+        :return: Значение ошибки.
         """
         return self.__error
 
@@ -142,62 +153,91 @@ class QuadtreeNode:
     def average_color(self) -> tuple[int, int, int]:
         """
         Возвращает значения цвета
-        :return: значение цвета
+        :return: Значение цвета.
         """
         return self.__average_color
 
     @property
     def childrens(self) -> Optional[list]:
-        """Возвращение дочерних узлов."""
+        """
+        Возвращение дочерних узлов.
+        :return: Список с дочерними узлами.
+        """
         return self.__childrens
 
     @property
     def border_box(self) -> tuple[int]:
-        """Возвращает граничные точек."""
+        """
+        Возвращает координаты граничных точек.
+        :return: Координаты точек.
+        """
         return self.__border_box
 
     @property
     def is_leaf(self) -> bool:
-        """Является ли узел листом или нет."""
+        """
+        Является ли узел листом или нет.
+        :return: Логическое значение
+        """
         return self.__is_leaf
 
     @is_leaf.setter
     def is_leaf(self, value: bool) -> None:
-        """Квадрант становится листом."""
+        """
+        Квадрант становится листом.
+        :param value: Булевое значение
+        :return: None
+        """
         self.__is_leaf = value
+
+    def __repr__(self) -> str:
+        """
+        Строковое представление узла
+        :return: строковое представление узла.
+        """
+        return f"Узел дерева: {self.__border_box}"
 
     def split(self, image: Image) -> None:
         """
         Разбивает данную секцию изображения на четыре равных блока.
-        :param image: изображение
+        :param image: Изображение
         :return: None
         """
-        
+
         left, top, right, bottom = self.__border_box
 
-        top_left = QuadtreeNode(image, (left, top, self.__node_center_point.x, self.__node_center_point.y),
+        top_left = QuadtreeNode(image, (
+            left, top, self.__node_center_point.x_coordinate,
+            self.__node_center_point.y_coordinate),
                                 self.__depth + 1)
-        top_right = QuadtreeNode(image, (self.__node_center_point.x, top, right, self.__node_center_point.y),
+        top_right = QuadtreeNode(image, (
+            self.__node_center_point.x_coordinate, top, right,
+            self.__node_center_point.y_coordinate),
                                  self.__depth + 1)
         bottom_left = QuadtreeNode(image,
-                                   (left, self.__node_center_point.y, self.__node_center_point.x, bottom),
+                                   (left,
+                                    self.__node_center_point.y_coordinate,
+                                    self.__node_center_point.x_coordinate,
+                                    bottom),
                                    self.__depth + 1)
         bottom_right = QuadtreeNode(image,
-                                    (self.__node_center_point.x, self.__node_center_point.y, right, bottom),
+                                    (self.__node_center_point.x_coordinate,
+                                     self.__node_center_point.y_coordinate,
+                                     right, bottom),
                                     self.__depth + 1)
 
         self.__childrens = [top_left, top_right, bottom_left, bottom_right]
-
-    def insert_point_into_node() -> None:
-        """
-        Вставка точки в узел
-        """
 
 
 class QuadTree:
     """Класс квадродерева."""
 
     def __init__(self, image: Image) -> None:
+        """
+        Конструктор класса
+        :param image: исходное изображение.
+        :return: None
+        """
         self.__width, self.__height = image.size
         self.__root = QuadtreeNode(image, image.getbbox(), 0)
 
@@ -205,26 +245,50 @@ class QuadTree:
         self.__max_depth = 0
         self.__build_tree(image, self.__root)
 
-
     @property
     def width(self) -> int:
-
+        """
+        Возвращает ширину исходного изображения
+        :return: ширина исходного изображения
+        """
         return self.__width
 
     @property
     def height(self) -> int:
-
+        """
+        Возвращает высоту исходного изображения
+        :return: высота изображения
+        """
         return self.__height
+
+    @property
+    def max_depth(self) -> int:
+        """
+        Возвращает максимальную глубину, достигнутую рекурсией.
+        :return: Значение максимальной глубины.
+        """
+        return self.__max_depth
+
+    @property
+    def root(self) -> QuadtreeNode:
+        """
+        Возвращает корневой узел
+        :return: высота изображения
+        """
+        return self.__root
 
     def __build_tree(self, image: Image, node: QuadtreeNode) -> None:
         """
-        Рекурсивно добавляет узлы, пока не будет достигнута максимальная глубина
+        Рекурсивно добавляет узлы, пока не будет достигнута макс. глубина
+        :param image: исходное изображение
+        :param node: узел
+        :return: None
         """
         if (node.depth >= MAX_DEPTH) or (node.error <= ERROR_THRESHOLD):
             if node.depth > self.__max_depth:
                 self.__max_depth = node.depth
             node.is_leaf = True
-            return
+            return None
 
         node.split(image)
 
@@ -242,6 +306,12 @@ class QuadTree:
         return None
 
     def get_leaf_nodes(self, depth: int) -> list:
+        """
+        Получаем листья дерева.
+        :param depth: Значение глубины рекурсии.
+        :return: Список листьев
+        """
+
         if depth > self.__max_depth:
             raise ValueError('Дана глубина больше, чем высота деревьев')
 
@@ -253,15 +323,17 @@ class QuadTree:
         return leaf_nodes
 
     def get_leaf_nodes_recursion(self, node: QuadtreeNode, depth: int,
-                                 leaf_nodes: list):
+                                 leaf_nodes: list) -> None:
         """
         Рекурсивно получает листовые узлы в зависимости от того,
         является ли узел листом или достигнута заданная глубина.
+        :param node: Узел
+        :param depth: значение глубины
+        :param leaf_nodes: Список листьев
+        :return:
         """
         if node.is_leaf is True or node.depth == depth:
             leaf_nodes.append(node)
         elif node.childrens is not None:
             for child in node.childrens:
                 self.get_leaf_nodes_recursion(child, depth, leaf_nodes)
-
-
