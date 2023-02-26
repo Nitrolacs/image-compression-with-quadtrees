@@ -4,7 +4,6 @@ import threading
 from typing import Optional, Union
 from PIL import Image
 
-
 MAX_DEPTH = 8  # Максимальная глубина узла
 ERROR_THRESHOLD = 13  # Порог значения
 
@@ -94,7 +93,7 @@ class QuadtreeNode:
         self.__depth = depth
         self.__childrens = None  # top left,top right,bottom left,bottom right
         self.__is_leaf = False
-        self.__node_points = []
+        self.node_points = []
 
         left_right = self.__border_box[0] + (self.__border_box[2] -
                                              self.__border_box[0]) / 2
@@ -132,14 +131,6 @@ class QuadtreeNode:
         :return: Координаты центральной точки.
         """
         return self.__node_center_point
-
-    @property
-    def node_points(self) -> list[Point]:
-        """
-        Возвращает список точек узла.
-        :return: Список точек узла.
-        """
-        return self.__node_points
 
     @property
     def error(self) -> float:
@@ -227,6 +218,105 @@ class QuadtreeNode:
                                     self.__depth + 1)
 
         self.__childrens = [top_left, top_right, bottom_left, bottom_right]
+
+    def insert_point(self, point: Point) -> "function":
+        """
+        Вставка точки в подходящий узел
+        :param point: Точка, которая должна быть вставлена
+        :return: None или рекурсивный вызов функции.
+        """
+        if self.childrens is not None:
+            if point.x_coordinate < self.__node_center_point.x_coordinate \
+                    and \
+                    point.y_coordinate < \
+                    self.__node_center_point.y_coordinate:
+                return self.childrens[0].insert_point(point)
+
+            if point.x_coordinate >= self.__node_center_point.x_coordinate \
+                    and \
+                    point.y_coordinate < \
+                    self.__node_center_point.y_coordinate:
+                return self.childrens[1].insert_point(point)
+
+            if point.x_coordinate < self.__node_center_point.x_coordinate \
+                    and \
+                    point.y_coordinate >= \
+                    self.__node_center_point.y_coordinate:
+                self.childrens[2].insert_point(point)
+
+            if point.x_coordinate >= self.__node_center_point.x_coordinate \
+                    and \
+                    point.y_coordinate >= \
+                    self.__node_center_point.y_coordinate:
+                self.childrens[3].insert_point(point)
+
+        self.node_points.append(point)
+
+    def find_node(self, point, search_list: list = None) ->list["QuadtreeNode",
+                                                                list]:
+        """
+        Возвращает узел, содержащий точку и путь до узла.
+        :param point: искомая точка
+        :param search_list: список узлов
+        :return: узел и список узлов
+        """
+        if not search_list:
+            search_list = []
+
+        search_list.append(self)
+
+        if self.childrens is not None:
+            if point.x_coordinate < self.__node_center_point.x_coordinate \
+                    and \
+                    point.y_coordinate < \
+                    self.__node_center_point.y_coordinate:
+                if self.childrens[0] is not None:
+                    return self.childrens[0].find_node(point,search_list)
+
+            elif point.x_coordinate >= self.__node_center_point.x_coordinate \
+                    and \
+                    point.y_coordinate < \
+                    self.__node_center_point.y_coordinate:
+                if self.childrens[1] is not None:
+                    return self.childrens[1].find_node(point, search_list)
+
+            elif point.x_coordinate < self.__node_center_point.x_coordinate \
+                    and \
+                    point.y_coordinate >= \
+                    self.__node_center_point.y_coordinate:
+                if self.childrens[2] is not None:
+                    return self.childrens[2].find_node(point, search_list)
+
+            elif point.x_coordinate >= self.__node_center_point.x_coordinate \
+                    and \
+                    point.y_coordinate >= \
+                    self.__node_center_point.y_coordinate:
+                if self.childrens[3] is not None:
+                    return self.childrens[3].find_node(point, search_list)
+
+        return self, search_list
+
+    def remove_point(self, delete_point: Point) -> None:
+        """
+        Удаление точки.
+        :param delete_point: Удаляемая точка.
+        :return: None
+        """
+        current_node, _ = self.find_node(delete_point)
+
+        if current_node is not None:
+            for point in current_node.node_points:
+                if point == delete_point:
+                    current_node.node_points.remove(point)
+
+    def find_node_contain_point(self, search_point: Point) -> "QuadtreeNode":
+        """
+        Возвращает узел, который содержит точку.
+        :param search_point: Искомая точка
+        :return: Необходимый узел.
+        """
+        current_node, _ = self.find_node(search_point)
+        return current_node
 
 
 class QuadTree:
