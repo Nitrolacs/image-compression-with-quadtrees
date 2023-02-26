@@ -10,11 +10,12 @@ from work_with_images import compression_start
 def check_fields(args: Any) -> bool:
     """Проверка переданных аргументов"""
 
-    if not os.path.exists(args.file):
+    if not os.path.exists(args.file) or args.file[len(args.file) - 3::] not in \
+            ["jpg", "png", "jpeg"]:
         print("Такого файла c изображением не существует.")
         return False
     
-    if (args.level) not in range(1, 9):
+    if args.level not in range(1, 9):
         print("Значение уровня сжатия должно быть от 0 до 8.")
         return False
     
