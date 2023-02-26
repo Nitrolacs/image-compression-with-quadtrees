@@ -51,9 +51,7 @@ def parse_args() -> Union[bool, str]:
 
 def main():
     """Точка входа"""
-    #parse_args()
-    compression_start("img/Model-3-Performance-Hero-Desktop-LHD.jpg", 8, False,
-                      False)
+    parse_args()
 
 
 if __name__ == "__main__":

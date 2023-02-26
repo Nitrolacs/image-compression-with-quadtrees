@@ -5,22 +5,35 @@ import threading
 from PIL import Image
 from typing import Optional, Union
 
-MAX_DEPTH = 8
-ERROR_THRESHOLD = 13
+MAX_DEPTH = 8  # Максимальная глубина узла
+ERROR_THRESHOLD = 13  # Порог значения
 
 class Point:
     """Класс точки."""
 
-    def __init__(self, x, y) -> None:
-        """Конструктор класса точки."""
+    def __init__(self, x: int, y: int) -> None:
+        """
+        Конструктор класса точки.
+        :param x: Координата x
+        :param y: Координата y
+        :return: None
+        """
         self.x = x
         self.y = y
 
     def __eq__(self, another: "Point") -> bool:
+        """
+        Сравнение двух точек.
+        :param another: Точка для сравнения
+        :return: Результат сравнения
+        """
         return self.x == another.y and self.y == another.y
 
     def __repr__(self) -> str:
-        """Строковое представление экземпляра класса"""
+        """
+        Строковое представление точки.
+        :return: строковое представление точки
+        """
         return f"Точка: ({self.x}, {self.y})"
 
 
@@ -72,6 +85,12 @@ class QuadtreeNode:
         self.__depth = depth
         self.__childrens = None  # top left, top right, bottom left, bottom right
         self.__is_leaf = False
+        self.__node_points = []
+
+        left_right = self.__border_box[0] + (self.__border_box[2] - self.__border_box[0]) / 2
+        top_bottom = self.__border_box[1] + (self.__border_box[3] - self.__border_box[1]) / 2
+
+        self.__node_center_point = Point(left_right, top_bottom)
 
         # Обрезка части изображения по координатам
         image = image.crop(border_box)
@@ -90,15 +109,31 @@ class QuadtreeNode:
     @property
     def depth(self) -> int:
         """
-        Возврат глубины.
+        Возвращает значение глубины.
         :return: глубина.
         """
         return self.__depth
+    
+    @property
+    def node_center_point(self) -> int:
+        """
+        Возвращает координаты центральной точки узла.
+        :return: глубина.
+        """
+        return self.__node_center_point
+    
+    @property
+    def node_points(self) -> list[Point]:
+        """
+        Возвращает список точек узла.
+        :return: глубина.
+        """
+        return self.__node_points
 
     @property
     def error(self) -> float:
         """
-        Возврат значения ошибки
+        Возвращает значения ошибки
         :return: значение ошибки
         """
         return self.__error
@@ -106,7 +141,7 @@ class QuadtreeNode:
     @property
     def average_color(self) -> tuple[int, int, int]:
         """
-        Возврат значения цвета
+        Возвращает значения цвета
         :return: значение цвета
         """
         return self.__average_color
@@ -118,12 +153,12 @@ class QuadtreeNode:
 
     @property
     def border_box(self) -> tuple[int]:
-        """Возврат граничных точек."""
+        """Возвращает граничные точек."""
         return self.__border_box
 
     @property
     def is_leaf(self) -> bool:
-        """Является ли квадрант листом или нет."""
+        """Является ли узел листом или нет."""
         return self.__is_leaf
 
     @is_leaf.setter
@@ -140,31 +175,33 @@ class QuadtreeNode:
         
         left, top, right, bottom = self.__border_box
 
-        left_right = left + (right - left) / 2
-        top_bottom = top + (bottom - top) / 2
-
-        top_left = QuadtreeNode(image, (left, top, left_right, top_bottom),
+        top_left = QuadtreeNode(image, (left, top, self.__node_center_point.x, self.__node_center_point.y),
                                 self.__depth + 1)
-        top_right = QuadtreeNode(image, (left_right, top, right, top_bottom),
+        top_right = QuadtreeNode(image, (self.__node_center_point.x, top, right, self.__node_center_point.y),
                                  self.__depth + 1)
         bottom_left = QuadtreeNode(image,
-                                   (left, top_bottom, left_right, bottom),
+                                   (left, self.__node_center_point.y, self.__node_center_point.x, bottom),
                                    self.__depth + 1)
         bottom_right = QuadtreeNode(image,
-                                    (left_right, top_bottom, right, bottom),
+                                    (self.__node_center_point.x, self.__node_center_point.y, right, bottom),
                                     self.__depth + 1)
 
         self.__childrens = [top_left, top_right, bottom_left, bottom_right]
 
+    def insert_point_into_node() -> None:
+        """
+        Вставка точки в узел
+        """
+
 
 class QuadTree:
-    """Класс квадродерева ."""
+    """Класс квадродерева."""
 
     def __init__(self, image: Image) -> None:
         self.__width, self.__height = image.size
         self.__root = QuadtreeNode(image, image.getbbox(), 0)
 
-        # keep track of max depth achieved by recursion
+        # остлеживает максимальную глубину, достигнутую рекурсией
         self.__max_depth = 0
         self.__build_tree(image, self.__root)
 
